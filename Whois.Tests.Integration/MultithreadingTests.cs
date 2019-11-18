@@ -28,11 +28,16 @@ namespace Whois
             {
                 Console.WriteLine($"Looking Up: {domain.DomainName}");
 
-                WhoisResponse response = null;
+                DomainResponse response = null;
 
                 try
                 {
-                    response = lookup.Lookup(domain.DomainName);
+                    var result = lookup.Lookup(domain.DomainName);
+
+                    if (result.ResponseType != typeof(DomainResponse))
+                        throw new Exception(string.Format("Invalid response type: {0}", result.ResponseType.Name));
+
+                    response = (DomainResponse)result;
 
                     Console.WriteLine($"Looked Up: {domain.DomainName}, Status: {response.Status}, Size: {response.Content.Length}");
                 }
@@ -50,7 +55,7 @@ namespace Whois
             var domains = new SampleReader().ReadSampleDomains();
 
             var queue = new ConcurrentQueue<SampleDomain>(domains);
-            var responses = new ConcurrentBag<WhoisResponse>();
+            var responses = new ConcurrentBag<DomainResponse>();
 
             var tasks = Enumerable.Range(1, 25).Select(async i => 
             {
@@ -64,9 +69,9 @@ namespace Whois
                     {
                         var response = await lookup.LookupAsync(domain.DomainName);
 
-                        if (response != null)
+                        if (response != null && response.ResponseType == typeof(DomainResponse))
                         {
-                            responses.Add(response);
+                            responses.Add((DomainResponse)response);
                         }
                         else
                         {
