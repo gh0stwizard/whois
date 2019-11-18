@@ -27,9 +27,11 @@ namespace Whois
             }
 
             // Check valid
-            if (Uri.CheckHostName(hostName) != UriHostNameType.Dns)
+            switch (Uri.CheckHostName(hostName))
             {
-                throw new FormatException($"'{hostName}' is not a valid host name.");
+                case UriHostNameType.Basic:
+                case UriHostNameType.Unknown:
+                    throw new FormatException($"'{hostName}' is not a valid host name.");
             }
 
             Value = hostName.ToLowerInvariant();
@@ -44,6 +46,21 @@ namespace Whois
         /// Determines if the host name is an internet Top Level Domain (TLD)
         /// </summary>
         public bool IsTld => Value.Contains(".") == false;
+
+        /// <summary>
+        /// Determines if the host name is an IPv4 address
+        /// </summary>
+        public bool IsIPv4 => Uri.CheckHostName(Value) == UriHostNameType.IPv4;
+
+        /// <summary>
+        /// Determines if the host name is an IPv6 address
+        /// </summary>
+        public bool IsIPv6 => Uri.CheckHostName(Value) == UriHostNameType.IPv6;
+
+        /// <summary>
+        /// Determines if the host name is either IPv4 or IPv6 address
+        /// </summary>
+        public bool IsIP => IsIPv4 || IsIPv6;
 
         /// <summary>
         /// Gets the TLD part of the hostname, e.g. "com" for "example.com"

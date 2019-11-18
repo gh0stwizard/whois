@@ -5,17 +5,18 @@ namespace Whois.Parsers.Fixups
     /// <summary>
     /// Helper class to fix up data on a WHOIS result
     /// </summary>
-    public interface IFixup
+    public interface IFixup<T>
+        where T : class, new()
     {
         /// <summary>
         /// Determines if this Fixup can be applied to the given response.
         /// </summary>
-        bool CanFixup(TokenizeResult<WhoisResponse> result);
+        bool CanFixup(TokenizeResult<T> result);
 
         /// <summary>
         /// Fixes the given result.
         /// </summary>
-        void Fixup(TokenizeResult<WhoisResponse> result);
+        void Fixup(TokenizeResult<T> result);
 
     }
 }

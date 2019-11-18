@@ -10,13 +10,13 @@ namespace Whois.Parsers.Fixups
     /// </summary>
     public class WhoisIsocOrgIlFixup : MultipleContactFixup
     {
-        public override bool CanFixup(TokenizeResult<WhoisResponse> result)
+        public override bool CanFixup(TokenizeResult<DomainResponse> result)
         {
             // Templates that this Fixup can work on
             return result.Template.Name == "whois.isoc.org.il/il/Found";
         }
 
-        protected override bool TryGetRegistrant(IList<Match> matches, WhoisResponse response, out Contact contact)
+        protected override bool TryGetRegistrant(IList<Match> matches, DomainResponse response, out Contact contact)
         {
             contact = null;
 

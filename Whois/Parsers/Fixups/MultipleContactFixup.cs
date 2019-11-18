@@ -8,9 +8,9 @@ namespace Whois.Parsers.Fixups
     /// <summary>
     /// Extracts referential contact details from WHOIS responses
     /// </summary>
-    public class MultipleContactFixup : IFixup
+    public class MultipleContactFixup : IFixup<DomainResponse>
     {
-        public virtual bool CanFixup(TokenizeResult<WhoisResponse> result)
+        public virtual bool CanFixup(TokenizeResult<DomainResponse> result)
         {
             if (result.Template.HasTag("fixup-contact"))
             {
@@ -23,7 +23,7 @@ namespace Whois.Parsers.Fixups
                    result.Template.Name == "whois.nic.at/at/Found";
         }
 
-        public void Fixup(TokenizeResult<WhoisResponse> result)
+        public void Fixup(TokenizeResult<DomainResponse> result)
         {
             var response = result.Value;
 
@@ -87,7 +87,7 @@ namespace Whois.Parsers.Fixups
             return contactIdMatch?.Location.Paragraph;
         }
 
-        protected virtual bool TryGetRegistrant(IList<Match> matches, WhoisResponse response, out Contact contact)
+        protected virtual bool TryGetRegistrant(IList<Match> matches, DomainResponse response, out Contact contact)
         {
             contact = null;
 

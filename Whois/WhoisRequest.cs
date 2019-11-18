@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 namespace Whois
 {
@@ -8,28 +9,31 @@ namespace Whois
     public class WhoisRequest
     {
         /// <summary>
-        /// Creates an empty query with the default options
+        /// Creates a request for the given query with the default options
         /// </summary>
-        public WhoisRequest()
+        /// <param name="query"></param>
+        public WhoisRequest(string query)
         {
+            if (string.IsNullOrWhiteSpace(query))
+                throw new ArgumentNullException(nameof(query));
+
+            if (query.StartsWith("."))
+                query = query.TrimStart('.');
+
+            if (HostName.TryParse(query, out var hostname) == false)
+                throw new WhoisException($"WHOIS Query Format Error: {Query}");
+
+            Query = query;
+            HostName = hostname;
             Encoding = WhoisOptions.Defaults.Encoding;
             TimeoutSeconds = WhoisOptions.Defaults.TimeoutSeconds;
             FollowReferrer = true;
         }
 
         /// <summary>
-        /// Creates a request for the given query with the default options
-        /// </summary>
-        /// <param name="query"></param>
-        public WhoisRequest(string query) : this()
-        {
-            Query = query;
-        }
-
-        /// <summary>
         /// The WHOIS query, typically the domain name
         /// </summary>
-        public string Query { get; set; }
+        public string Query { get; internal set; }
 
         /// <summary>
         /// The encoding to use whilst reading data from the WHOIS server
@@ -51,5 +55,8 @@ namespace Whois
         /// server for the domain TLD will be attempted to be found automatically.
         /// </summary>
         public string WhoisServer { get; set; }
+
+
+        public HostName HostName { get; private set; }
     }
 }

@@ -1,34 +1,33 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Tokens;
 using Whois.Logging;
 using Whois.Net;
 using Whois.Parsers;
-using Whois.Parsers.Fixups;
 
 namespace Whois.Servers
 {
-    /// <summary>
-    /// Class to lookup a WHOIS server for a TLD from IANA 
-    /// </summary>
-    public sealed class IanaServerLookup : WhoisServerLookupBase<DomainResponse>
+    public sealed class ArinServerLookup : WhoisServerLookupBase<NetworkResponse>
     {
-        private const string Server = "whois.iana.org";
+        private const string Server = "whois.arin.net";
         private static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
+
         /// <summary>
-        /// Creates a new instance of the IANA Server Lookup
+        /// Creates a new instance of the ARIN Server Lookup
         /// </summary>
-        public IanaServerLookup() : this(new TcpReader())
+        public ArinServerLookup() : this(new TcpReader())
         {
         }
 
-        public IanaServerLookup(ITcpReader tcpReader) : base(tcpReader)
+        public ArinServerLookup(ITcpReader tcpReader) : base(tcpReader)
         {
-            ResponseType = typeof(DomainResponse);
-            Parser = new WhoisDomainParser();
+            ResponseType = typeof(NetworkResponse);
+            Parser = new WhoisNetworkParser();
         }
+
 
         public override async Task<WhoisResponse> LookupAsync(WhoisRequest request)
         {
@@ -38,20 +37,17 @@ namespace Whois.Servers
 
             if (result != null)
             {
-                if (!request.HostName.IsIP && result.DomainName == null)
-                    result.DomainName = new HostName(request.HostName.Tld);
-
                 return result;
             }
 
-            return new DomainResponse { Content = content };
+            return new NetworkResponse { Content = content };
         }
+
 
         public override async Task<string> DownloadAsync(string url, WhoisRequest request)
         {
-            // TODO: Expose this & extend for other TLDs
             var query = request.Query;
-            if (query.EndsWith("jp")) query += "/e";    // Return English .jp results
+            if (!query.StartsWith("n ")) query = "n " + query;
 
             var content = await TcpReader.Read(url, 43, query, request.Encoding, request.TimeoutSeconds);
 

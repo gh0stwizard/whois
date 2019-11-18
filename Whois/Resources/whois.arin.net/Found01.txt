@@ -1,0 +1,14 @@
+﻿---
+#
+# .arin Parsing Template
+#
+name: whois.arin.net/Found01
+
+# Use this template for queries to whois.iana.org:
+tag: whois.arin.net
+
+# End tokens on new lines
+terminateOnNewLine: true
+
+---
+

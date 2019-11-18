@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
 
 namespace Whois
 {
@@ -15,7 +16,11 @@ namespace Whois
             {
                 Encoding = Encoding.UTF8,
                 FollowReferrer = true,
-                TimeoutSeconds = 10
+                TimeoutSeconds = 10,
+                IgnoredWhoisServers = new List<string>()
+                {
+                    "whois.cscglobal.com"
+                }
             };
         }
 
@@ -35,6 +40,11 @@ namespace Whois
         public bool FollowReferrer { get; set; }
 
         /// <summary>
+        /// List of ignored whois servers.
+        /// </summary>
+        public IList<string> IgnoredWhoisServers { get; set; }
+
+        /// <summary>
         /// Clones this instance.
         /// </summary>
         public WhoisOptions Clone()
@@ -43,7 +53,8 @@ namespace Whois
             {
                 Encoding = Encoding,
                 TimeoutSeconds = TimeoutSeconds,
-                FollowReferrer = FollowReferrer
+                FollowReferrer = FollowReferrer,
+                IgnoredWhoisServers = IgnoredWhoisServers
             };
         }
     }

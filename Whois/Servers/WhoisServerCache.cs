@@ -21,7 +21,8 @@ namespace Whois.Servers
 
         public void Set(WhoisResponse server)
         {
-            cache.AddOrUpdate(server.DomainName.ToUnicodeString(), server, (tld, existing) => server);
+            if (server.ResponseType == typeof(DomainResponse))
+                cache.AddOrUpdate(((DomainResponse)server).DomainName.ToUnicodeString(), server, (tld, existing) => server);
         }
     }
 }

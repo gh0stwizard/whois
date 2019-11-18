@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -16,17 +17,14 @@ namespace Whois
     public class WhoisLookup : IWhoisLookup
     {
         private static readonly ILog Log = LogProvider.GetCurrentClassLogger();
-        
-        private readonly WhoisParser whoisParser;
+        public WhoisServerSelector ServerSelector;
 
         /// <summary>
         /// The default <see cref="WhoisOptions"/> to use for this instance
         /// </summary>
         public WhoisOptions Options { get; set; }
 
-        /// <summary>
-        /// The WHOIS Server Lookup that finds root TLD servers for queries
-        /// </summary>
+
         public IWhoisServerLookup ServerLookup { get; set; }
 
         /// <summary>
@@ -44,12 +42,12 @@ namespace Whois
         /// <summary>
         /// Initializes a new instance of the <see cref="WhoisLookup"/> class with the given <see cref="WhoisOptions"/>.
         /// </summary>
-        public WhoisLookup(WhoisOptions options) 
+        public WhoisLookup(WhoisOptions options)
         {
             Options = options;
-            whoisParser = new WhoisParser();
             TcpReader = new TcpReader();
-            ServerLookup = new IanaServerLookup(TcpReader);
+            ServerSelector = new WhoisServerSelector(TcpReader);
+            ServerLookup = ServerSelector.Default;
         }
 
         /// <summary>
@@ -89,9 +87,8 @@ namespace Whois
         /// </summary>
         public Task<WhoisResponse> LookupAsync(string domain, Encoding encoding)
         {
-            return LookupAsync(new WhoisRequest
+            return LookupAsync(new WhoisRequest(domain)
             {
-                Query = domain,
                 Encoding = encoding,
                 TimeoutSeconds = Options.TimeoutSeconds,
                 FollowReferrer = Options.FollowReferrer
@@ -103,21 +100,7 @@ namespace Whois
         /// </summary>
         public async Task<WhoisResponse> LookupAsync(WhoisRequest request)
         {
-            if (string.IsNullOrEmpty(request.Query))
-            {
-                throw new ArgumentNullException("domain");
-            }
-
-            // Trim leading '.'
-            if (request.Query.StartsWith(".")) request.Query = request.Query.Substring(1);
-
-            // Validate domain name
-            if (HostName.TryParse(request.Query, out var hostName) == false)
-            {
-                throw new WhoisException($"WHOIS Query Format Error: {request.Query}");
-            }
-
-            Log.Debug("Looking up WHOIS response for: {0}", hostName.Value);
+            Log.Debug("Looking up WHOIS response for: {0}", request.HostName.Value);
 
             // Set our starting point
             WhoisResponse response;
@@ -133,69 +116,31 @@ namespace Whois
             }
 
             // Main loop: download & parse WHOIS data and follow the referrer chain
-            var whoisServer = response?.WhoisServer;
-            while (whoisServer != null && !hostName.IsTld)
+            HostName whoisServer = null;
+            while (response?.WhoisServer != null)
             {
-                // Download
-                var content = await Download(whoisServer.Value, request);
+                if (Options.IgnoredWhoisServers.Contains(response.WhoisServer.Value)
+                    || (!request.HostName.IsIP && request.HostName.IsTld))
+                    break;
 
-                // Parse result
-                var parsed = whoisParser.Parse(whoisServer.Value, content);
+                if (whoisServer != response.WhoisServer)
+                {
+                    whoisServer = response.WhoisServer;
+                    ServerLookup = ServerSelector.Find(whoisServer);
+                    request.WhoisServer = response.WhoisServer.Value;
+                }
+
+                var parsed = await ServerLookup.LookupAsync(request);
 
                 // Build referrer chain
                 response = response.Chain(parsed);
 
                 // Check for referral loop
-                if (request.FollowReferrer == false) break;
-                if (response.SeenServer(response.WhoisServer)) break;
-           
-                // Lookup result in referral server
-                whoisServer = response.WhoisServer;
+                if (request.FollowReferrer == false || response.SeenServer(response.WhoisServer))
+                    break;
             }
 
             return response;
-        }
-
-        public bool IsValidDomainName(string domain)
-        {
-            var valid = false;
-
-            if (!string.IsNullOrEmpty(domain))
-            {
-                var regex = new Regex(@"^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}$");
-
-                valid = regex.Match(domain).Success;
-            }
-
-            return valid;
-        }
-
-        internal bool IsTldQuery(string query)
-        {
-            var isTldQuery = false;
-
-            if (!string.IsNullOrEmpty(query))
-            {
-                var regex = new Regex(@"^\.([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)");
-
-                isTldQuery = regex.Match(query).Success;
-            }
-
-
-            return isTldQuery;
-        }
-
-        private async Task<string> Download(string url, WhoisRequest request)
-        {
-            // TODO: Expose this & extend for other TLDs
-            var query = request.Query;
-            if (query.EndsWith("jp")) query += "/e";    // Return English .jp results
-
-            var content = await TcpReader.Read(url, 43, query, request.Encoding, request.TimeoutSeconds);
-
-            Log.Debug("Lookup {0}: Downloaded {1:###,###,##0} byte(s) from {2}.", request.Query, content.Length, url);
-
-            return content;
         }
 
         public void Dispose()

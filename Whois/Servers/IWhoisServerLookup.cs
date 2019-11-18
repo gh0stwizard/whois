@@ -17,5 +17,13 @@ namespace Whois.Servers
         /// Lookups the root WHOIS server for the specified request.
         /// </summary>
         Task<WhoisResponse> LookupAsync(WhoisRequest request);
+
+        /// <summary>
+        /// Download result from specified WHOIS server URL and request options.
+        /// </summary>
+        /// <param name="url">WHOIS Server</param>
+        /// <param name="request">Request options, <see cref="WhoisRequest"/>.</param>
+        /// <returns>Content</returns>
+        Task<string> DownloadAsync(string url, WhoisRequest request);
     }
 }

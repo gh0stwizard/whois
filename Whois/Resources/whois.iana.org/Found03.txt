@@ -1,0 +1,20 @@
+﻿---
+#
+# .int Parsing Template
+#
+name: whois.iana.org/Found03
+
+# Use this template for queries to whois.iana.org:
+tag: whois.iana.org
+
+# End tokens on new lines
+terminateOnNewLine: true
+
+hint: This query returned 1 object
+---
+organisation: { Registrant.Organization ? }
+status:       { DomainStatus ? : Repeating, CleanDomainStatus }
+whois:        { Registrar.WhoisServer ? : IsDomainName, ToHostName }
+created:      { Registered ? : ToDateTimeUtc("yyyy-MM-dd") }
+changed:      { Updated ? : ToDateTimeUtc("yyyy-MM-dd") }
+
