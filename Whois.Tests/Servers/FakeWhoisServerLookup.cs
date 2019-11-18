@@ -5,11 +5,11 @@ namespace Whois.Servers
     /// <summary>
     /// Fake class used for testing.
     /// </summary>
-    internal class FakeWhoisServerLookup : IWhoisServerLookup
+    internal class FakeWhoisServerLookup : WhoisServerLookupBase<DomainResponse>
     {
-        public WhoisResponse Lookup(WhoisRequest request)
+        public override WhoisResponse Lookup(WhoisRequest request)
         {
-            return new WhoisResponse
+            return new DomainResponse
             {
                 DomainName = new HostName("com"), 
                 Registrar = new Registrar
@@ -19,13 +19,14 @@ namespace Whois.Servers
             };
         }
 
-        public Task<WhoisResponse> LookupAsync(WhoisRequest request)
+        public override Task<WhoisResponse> LookupAsync(WhoisRequest request)
         {
             return Task.FromResult(Lookup(request));
         }
 
-        public void Dispose()
+        public override Task<string> DownloadAsync(string url, WhoisRequest request)
         {
+            throw new System.NotImplementedException();
         }
     }
 }

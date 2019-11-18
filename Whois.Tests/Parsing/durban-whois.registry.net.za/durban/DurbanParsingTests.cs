@@ -7,14 +7,14 @@ namespace Whois.Parsing.Durban.Whois.Registry.Net.Za.Durban
     [TestFixture]
     public class DurbanParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

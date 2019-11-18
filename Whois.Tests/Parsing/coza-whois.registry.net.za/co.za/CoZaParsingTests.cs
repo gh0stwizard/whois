@@ -7,14 +7,14 @@ namespace Whois.Parsing.Coza.Whois.Registry.Net.Za.CoZa
     [TestFixture]
     public class CoZaParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

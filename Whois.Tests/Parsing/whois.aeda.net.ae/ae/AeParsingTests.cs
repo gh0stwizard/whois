@@ -6,14 +6,14 @@ namespace Whois.Parsing.Whois.Aeda.Net.Ae.Ae
     [TestFixture]
     public class AeParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

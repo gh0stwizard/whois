@@ -24,7 +24,7 @@ namespace Whois.Servers
         [Test]
         public void TestGetServerWhenCached()
         {
-            var existing = new WhoisResponse { DomainName = new HostName("com") };
+            var existing = new DomainResponse { DomainName = new HostName("com") };
             cache.Set(existing);
 
             var server = cache.Get("com");
@@ -35,9 +35,9 @@ namespace Whois.Servers
         [Test]
         public void TestCacheUpdate()
         {
-            var first = new WhoisResponse { DomainName = new HostName("com")};
+            var first = new DomainResponse { DomainName = new HostName("com")};
             cache.Set(first);
-            var second = new WhoisResponse { DomainName = new HostName("com") };
+            var second = new DomainResponse { DomainName = new HostName("com") };
             cache.Set(second);
 
             var server = cache.Get("com");

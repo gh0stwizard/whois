@@ -7,14 +7,14 @@ namespace Whois.Parsing.Whois.Kenic.Or.Ke.Ke
     [TestFixture]
     public class KeParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

@@ -15,6 +15,7 @@ namespace Whois
 
         private Mock<IWhoisServerLookup> whoisServerLookup;
         private Mock<ITcpReader> tcpReader;
+        private Mock<WhoisServerSelector> selector;
         private SampleReader sampleReader;
 
         [SetUp]
@@ -23,11 +24,13 @@ namespace Whois
             whoisServerLookup = new Mock<IWhoisServerLookup>();
             tcpReader = new Mock<ITcpReader>();
             sampleReader = new SampleReader();
+            selector = new Mock<WhoisServerSelector>(tcpReader.Object);
 
-            lookup = new WhoisLookup
+            lookup = new WhoisLookup()
             {
-                TcpReader = tcpReader.Object, 
-                ServerLookup = whoisServerLookup.Object
+                TcpReader = tcpReader.Object,
+                ServerLookup = whoisServerLookup.Object,
+                ServerSelector = selector.Object
             };
         }
 
@@ -36,7 +39,7 @@ namespace Whois
         {
             var request = new WhoisRequest("google.com");
 
-            var rootServer = new WhoisResponse
+            var rootServer = new DomainResponse
             {
                 DomainName = new HostName("com"),
                 Registrar = new Registrar { WhoisServer = new HostName("whois.markmonitor.com") }
@@ -44,16 +47,18 @@ namespace Whois
 
             whoisServerLookup
                 .Setup(call => call.LookupAsync(request))
-                .Returns(Task.FromResult(rootServer));
+                .Returns(Task.FromResult((WhoisResponse)rootServer));
 
             tcpReader
                 .Setup(call => call.Read("whois.markmonitor.com", 43, "google.com", Encoding.UTF8, 10))
                 .Returns(Task.FromResult(sampleReader.Read("whois.markmonitor.com", "com", "found.txt")));
 
             var result = await lookup.LookupAsync(request);
+            Assert.AreEqual(result.ResponseType, typeof(DomainResponse));
+            var response = (DomainResponse)result;
 
-            Assert.AreEqual("google.com", result.DomainName.ToString());
-            Assert.AreEqual(WhoisStatus.Found, result.Status);
+            Assert.AreEqual("google.com", response.DomainName.ToString());
+            Assert.AreEqual(WhoisStatus.Found, response.Status);
         }
 
         [Test]
@@ -63,7 +68,7 @@ namespace Whois
             var intermediateResult = sampleReader.Read("whois.verisign-grs.com", "com", "found_status_registered.txt");
             var authoritativeResult = sampleReader.Read("whois.markmonitor.com", "com", "found.txt");
 
-            var rootServer = new WhoisResponse
+            var rootServer = new DomainResponse
             {
                 DomainName = new HostName("com"),
                 Registrar = new Registrar { WhoisServer = new HostName("whois.verisign-grs.com") }
@@ -71,7 +76,7 @@ namespace Whois
 
             whoisServerLookup
                 .Setup(call => call.LookupAsync(request))
-                .Returns(Task.FromResult(rootServer));
+                .Returns(Task.FromResult((WhoisResponse)rootServer));
 
             tcpReader
                 .Setup(call => call.Read("whois.verisign-grs.com", 43, "google.com", Encoding.UTF8, 10))
@@ -82,48 +87,52 @@ namespace Whois
                 .Returns(Task.FromResult(authoritativeResult));
 
             var result = await lookup.LookupAsync(request);
+            Assert.AreEqual(result.ResponseType, typeof(DomainResponse));
+            var response = (DomainResponse)result;
 
-            Assert.AreEqual("google.com", result.DomainName.ToString());
-            Assert.AreEqual(WhoisStatus.Found, result.Status);
+            Assert.AreEqual("google.com", response.DomainName.ToString());
+            Assert.AreEqual(WhoisStatus.Found, response.Status);
 
-            Assert.AreEqual(authoritativeResult, result.Content);
-            Assert.AreEqual(intermediateResult, result.Referrer.Content);
+            Assert.AreEqual(authoritativeResult, response.Content);
+            Assert.AreEqual(intermediateResult, response.Referrer.Content);
             Assert.AreEqual(rootServer, result.Referrer.Referrer);
         }
 
         [Test]
         public async Task TestLookupDomainDontFollowReferrer()
         {
-            var request = new WhoisRequest { Query = "google.com", FollowReferrer = false };
+            var request = new WhoisRequest("google.com") { FollowReferrer = false };
             var intermediateResult = sampleReader.Read("whois.verisign-grs.com", "com", "found_status_registered.txt");
 
-            var rootServer = new WhoisResponse
+            var rootServer = new DomainResponse
             {
-                DomainName = new HostName("com"),
-                Registrar = new Registrar { WhoisServer = new HostName("whois.verisign-grs.com") }
+                DomainName = new HostName("google.com"),
+                Registrar = new Registrar { WhoisServer = new HostName("whois.verisign-grs.com") },
+                Status = WhoisStatus.Found
             };
 
             whoisServerLookup
                 .Setup(call => call.LookupAsync(request))
-                .Returns(Task.FromResult(rootServer));
+                .Returns(Task.FromResult((WhoisResponse)rootServer));
 
             tcpReader
                 .Setup(call => call.Read("whois.verisign-grs.com", 43, "google.com", Encoding.UTF8, 10))
                 .Returns(Task.FromResult(intermediateResult));
 
             var result = await lookup.LookupAsync(request);
+            var response = (DomainResponse)result;
 
-            Assert.AreEqual("google.com", result.DomainName.ToString());
-            Assert.AreEqual(WhoisStatus.Found, result.Status);
+            Assert.AreEqual("google.com", response.DomainName.ToString());
+            Assert.AreEqual(WhoisStatus.Found, response.Status);
 
-            Assert.AreEqual(intermediateResult, result.Content);
-            Assert.AreEqual(rootServer, result.Referrer);
+            Assert.AreEqual(intermediateResult, response.Content);
+            Assert.AreEqual(rootServer, response.Referrer);
         }
 
         [Test]
         public async Task TestLookupDomainSpecifyRootServer()
         {
-            var request = new WhoisRequest { Query = "google.com", WhoisServer = "whois.markmonitor.com" };
+            var request = new WhoisRequest("google.com") { WhoisServer = "whois.markmonitor.com" };
             var authoritativeResult = sampleReader.Read("whois.markmonitor.com", "com", "found.txt");
 
             tcpReader
@@ -131,12 +140,14 @@ namespace Whois
                 .Returns(Task.FromResult(authoritativeResult));
 
             var result = await lookup.LookupAsync(request);
+            Assert.AreEqual(result.ResponseType, typeof(DomainResponse));
+            var response = (DomainResponse)result;
 
-            Assert.AreEqual("google.com", result.DomainName.ToString());
-            Assert.AreEqual(WhoisStatus.Found, result.Status);
+            Assert.AreEqual("google.com", response.DomainName.ToString());
+            Assert.AreEqual(WhoisStatus.Found, response.Status);
 
-            Assert.AreEqual(authoritativeResult, result.Content);
-            Assert.AreEqual("whois.markmonitor.com", result.Referrer.WhoisServer.Value);
+            Assert.AreEqual(authoritativeResult, response.Content);
+            Assert.AreEqual("whois.markmonitor.com", response.Referrer.WhoisServer.Value);
 
             whoisServerLookup
                 .Verify(call => call.LookupAsync(request), Times.Never());
@@ -147,7 +158,7 @@ namespace Whois
         {
             var request = new WhoisRequest(".com");
 
-            var rootServer = new WhoisResponse
+            var rootServer = new DomainResponse
             {
                 DomainName = new HostName("com"),
                 Registrar = new Registrar { WhoisServer = new HostName("whois.markmonitor.com") }
@@ -155,9 +166,10 @@ namespace Whois
 
             whoisServerLookup
                 .Setup(call => call.LookupAsync(request))
-                .Returns(Task.FromResult(rootServer));
+                .Returns(Task.FromResult((WhoisResponse)rootServer));
 
             var result = await lookup.LookupAsync(request);
+            Assert.AreEqual(result.ResponseType, typeof(DomainResponse));
 
             Assert.AreEqual(rootServer, result);
         }

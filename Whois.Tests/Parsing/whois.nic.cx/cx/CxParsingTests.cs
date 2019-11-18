@@ -7,14 +7,14 @@ namespace Whois.Parsing.Whois.Nic.Cx.Cx
     [TestFixture]
     public class CxParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

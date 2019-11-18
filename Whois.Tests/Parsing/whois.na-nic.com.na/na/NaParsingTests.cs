@@ -7,14 +7,14 @@ namespace Whois.Parsing.Whois.Na.Nic.Com.Na.Na
     [TestFixture]
     public class NaParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

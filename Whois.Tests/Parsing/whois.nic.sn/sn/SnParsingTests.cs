@@ -7,14 +7,14 @@ namespace Whois.Parsing.Whois.Nic.Sn.Sn
     [TestFixture]
     public class SnParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

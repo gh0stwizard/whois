@@ -7,14 +7,14 @@ namespace Whois.Parsing.Whois.Nic.Travel.Travel
     [TestFixture]
     public class TravelParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

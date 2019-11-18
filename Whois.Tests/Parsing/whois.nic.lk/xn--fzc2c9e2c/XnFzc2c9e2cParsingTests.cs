@@ -7,14 +7,14 @@ namespace Whois.Parsing.Whois.Nic.Lk.XnFzc2c9e2c
     [TestFixture]
     public class XnFzc2c9e2cParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

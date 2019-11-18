@@ -7,14 +7,14 @@ namespace Whois.Parsing.Whois.Donuts.Co.Bike
     [TestFixture]
     public class BikeParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

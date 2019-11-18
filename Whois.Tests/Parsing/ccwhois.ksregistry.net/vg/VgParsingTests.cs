@@ -1,20 +1,29 @@
 using System;
 using NUnit.Framework;
 using Whois.Parsers;
+using Whois.Parsers.Fixups;
 
 namespace Whois.Parsing.Ccwhois.Ksregistry.Net.Vg
 {
     [TestFixture]
     public class VgParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
+
+            // Register default transformers
+            parser.Matcher.RegisterTransformer<CleanDomainStatusTransformer>();
+            parser.Matcher.RegisterTransformer<ToHostNameTransformer>();
+
+            // Register default FixUps
+            parser.FixUps.Add(new MultipleContactFixup());
+            parser.FixUps.Add(new WhoisIsocOrgIlFixup());
         }
 
         [Test]

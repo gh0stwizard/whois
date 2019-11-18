@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Whois
@@ -12,7 +11,7 @@ namespace Whois
     {
         private static StringBuilder sb = new StringBuilder();
 
-        public static void Write(WhoisResponse response)
+        public static void Write(DomainResponse response)
         {
             sb.Clear();
 

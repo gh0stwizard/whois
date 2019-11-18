@@ -1,20 +1,21 @@
 using System;
 using NUnit.Framework;
 using Whois.Parsers;
+using Whois.Parsers.Fixups;
 
 namespace Whois.Parsing.Capetown.Whois.Registry.Net.Za.Capetown
 {
     [TestFixture]
     public class CapetownParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

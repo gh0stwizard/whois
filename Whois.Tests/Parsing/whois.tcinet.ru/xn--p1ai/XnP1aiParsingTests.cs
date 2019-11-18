@@ -7,14 +7,14 @@ namespace Whois.Parsing.Whois.Tcinet.Ru.XnP1ai
     [TestFixture]
     public class XnP1aiParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

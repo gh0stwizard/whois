@@ -7,14 +7,14 @@ namespace Whois.Parsing.Whois.Centralnic.Com.CnCom
     [TestFixture]
     public class CnComParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

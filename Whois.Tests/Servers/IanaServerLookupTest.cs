@@ -24,7 +24,11 @@ namespace Whois.Servers
         {
             lookup.TcpReader = new FakeTcpReader(reader.Read("whois.iana.org", "tld", "com.txt"));
 
-            var response = lookup.Lookup(new WhoisRequest("test.com"));
+            var result = lookup.Lookup(new WhoisRequest("test.com"));
+
+            Assert.AreEqual(result.ResponseType, typeof(DomainResponse));
+
+            var response = (DomainResponse)result;
 
             Assert.AreEqual(0, response.ParsingErrors);
 
@@ -94,7 +98,7 @@ namespace Whois.Servers
             Assert.AreEqual(1, response.DomainStatus.Count);
             Assert.AreEqual("ACTIVE", response.DomainStatus[0]);
 
-            Assert.AreEqual(0, response.FieldsParsed);
+            Assert.AreEqual(40, response.FieldsParsed);
         }
 
         [Test]
@@ -102,7 +106,11 @@ namespace Whois.Servers
         {
             lookup.TcpReader = new FakeTcpReader(reader.Read("whois.iana.org", "tld", "be.txt"));
 
-            var response = lookup.Lookup(new WhoisRequest("test.be"));
+            var result = lookup.Lookup(new WhoisRequest("test.be"));
+
+            Assert.AreEqual(result.ResponseType, typeof(DomainResponse));
+
+            var response = (DomainResponse)result;
 
             AssertWriter.Write(response);
             Assert.AreEqual(0, response.ParsingErrors);
@@ -166,7 +174,7 @@ namespace Whois.Servers
             Assert.AreEqual(1, response.DomainStatus.Count);
             Assert.AreEqual("ACTIVE", response.DomainStatus[0]);
 
-            Assert.AreEqual(0, response.FieldsParsed);
+            Assert.AreEqual(33, response.FieldsParsed);
         }
 
         [Test]
@@ -174,7 +182,11 @@ namespace Whois.Servers
         {
             lookup.TcpReader = new FakeTcpReader(reader.Read("whois.iana.org", "tld", "not_assigned.txt"));
 
-            var response = lookup.Lookup(new WhoisRequest("test.be"));
+            var result = lookup.Lookup(new WhoisRequest("test.be"));
+
+            Assert.AreEqual(result.ResponseType, typeof(DomainResponse));
+
+            var response = (DomainResponse)result;
 
             AssertWriter.Write(response);
             Assert.AreEqual(0, response.ParsingErrors);
@@ -182,7 +194,7 @@ namespace Whois.Servers
             Assert.AreEqual("eh", response.DomainName.ToString());
 
 
-            Assert.AreEqual(0, response.FieldsParsed);
+            Assert.AreEqual(2, response.FieldsParsed);
         }
     }
 }

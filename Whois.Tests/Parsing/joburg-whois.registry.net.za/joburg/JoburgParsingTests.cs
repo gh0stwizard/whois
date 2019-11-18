@@ -7,14 +7,14 @@ namespace Whois.Parsing.Joburg.Whois.Registry.Net.Za.Joburg
     [TestFixture]
     public class JoburgParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

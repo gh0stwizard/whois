@@ -6,14 +6,14 @@ namespace Whois.Parsing.Whois.Dotgov.Gov.Gov
     [TestFixture]
     public class GovParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

@@ -1,11 +1,12 @@
 ﻿using NUnit.Framework;
+using Whois.Parsers.Fixups;
 
 namespace Whois.Parsers
 {
     [TestFixture]
     public class WhoisParserTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
         private SampleReader sampleReader;
 
         [SetUp]
@@ -13,8 +14,15 @@ namespace Whois.Parsers
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
             sampleReader = new SampleReader();
+
+            parser.Matcher.RegisterTransformer<CleanDomainStatusTransformer>();
+            parser.Matcher.RegisterTransformer<ToHostNameTransformer>();
+
+            // Register default FixUps
+            parser.FixUps.Add(new MultipleContactFixup());
+            parser.FixUps.Add(new WhoisIsocOrgIlFixup());
         }
 
         [Test]

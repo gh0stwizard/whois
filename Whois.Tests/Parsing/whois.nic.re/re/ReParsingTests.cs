@@ -7,14 +7,14 @@ namespace Whois.Parsing.Whois.Nic.Re.Re
     [TestFixture]
     public class ReParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]

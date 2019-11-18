@@ -6,14 +6,14 @@ namespace Whois.Parsing.Whois.Usp.Ac.Fj.Fj
     [TestFixture]
     public class FjParsingTests : ParsingTests
     {
-        private WhoisParser parser;
+        private WhoisDomainParser parser;
 
         [SetUp]
         public void SetUp()
         {
             SerilogConfig.Init();
 
-            parser = new WhoisParser();
+            parser = new WhoisDomainParser();
         }
 
         [Test]
